@@ -1,13 +1,131 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>what-cook</title>
+    <title>Что на ужин?</title>
+    <link rel="preconnect" href="https://googleapis.com" />
+    <link rel="preconnect" href="https://gstatic.com" crossorigin />
+    <link
+      href="https://googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="app">
+      <header class="header">
+        <div class="header__badge">Семейная книга идей</div>
+        <h1 class="header__title">Что приготовим сегодня?</h1>
+        <p class="header__subtitle">Выбирай настроение — я подскажу блюдо и где лежит рецепт</p>
+      </header>
+
+      <main class="menu">
+        <button class="menu-card menu-card--primary" id="btn-pick">
+          <span class="menu-card__icon">🎲</span>
+          <div class="menu-card__text">
+            <span class="menu-card__title">Подобрать рецепт</span>
+            <span class="menu-card__desc">Случайное блюдо из нашей коллекции</span>
+          </div>
+        </button>
+
+        <button class="menu-card" id="btn-all">
+          <span class="menu-card__icon">📖</span>
+          <div class="menu-card__text">
+            <span class="menu-card__title">Все рецепты</span>
+            <span class="menu-card__desc" id="dishes-count">Загружаю список...</span>
+          </div>
+        </button>
+
+        <button class="menu-card" id="btn-add">
+          <span class="menu-card__icon">➕</span>
+          <div class="menu-card__text">
+            <span class="menu-card__title">Добавить рецепт</span>
+            <span class="menu-card__desc">Сохранить новую идею в общую базу</span>
+          </div>
+        </button>
+      </main>
+    </div>
+
+    <section class="overlay" id="overlay-all" inert>
+      <div class="overlay__container">
+        <div class="overlay__header">
+          <button class="btn-back" id="btn-close-all">← Назад</button>
+          <h2 class="overlay__title">Все рецепты</h2>
+        </div>
+        <div class="dishes-grid" id="dishes-grid">
+        </div>
+      </div>
+    </section>
+
+    <dialog class="modal" id="modal-pick">
+      <div class="modal__box">
+        <button type="button" class="modal__close" data-close>✕</button>
+
+        <div class="picker-loader" id="picker-loader">
+          <div class="picker-loader__emoji">🍳</div>
+          <p>Листаю семейные рецепты...</p>
+        </div>
+
+        <div class="dish-detail hidden" id="picker-result">
+          <img class="dish-detail__img" id="pick-img" src="" alt="" />
+          <span class="dish-detail__source" id="pick-source"></span>
+          <h3 class="dish-detail__title" id="pick-title"></h3>
+          <p class="dish-detail__desc" id="pick-desc"></p>
+
+          <button type="button" class="btn-primary" id="btn-pick-again">🔄 Другой вариант</button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="modal-detail">
+      <div class="modal__box">
+        <button type="button" class="modal__close" data-close>✕</button>
+        <div class="dish-detail">
+          <img class="dish-detail__img" id="detail-img" src="" alt="" />
+          <span class="dish-detail__source" id="detail-source"></span>
+          <h3 class="dish-detail__title" id="detail-title"></h3>
+          <p class="dish-detail__desc" id="detail-desc"></p>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="modal-add">
+      <div class="modal__box">
+        <button type="button" class="modal__close" data-close>✕</button>
+        <h3 class="modal__title">Новый рецепт</h3>
+
+        <form class="add-form" id="form-add">
+          <label class="form-field">
+            <span>Название блюда *</span>
+            <input type="text" id="input-title" placeholder="Например: Паста Карбонара" required />
+          </label>
+
+          <div class="form-field">
+            <span>Где искать рецепт? *</span>
+            <input type="text" id="input-source" placeholder="Например: Папин блокнот, стр. 14" required />
+            <div class="chips" id="source-chips">
+              <button type="button" class="chip" data-value="Папин блокнот">📓 Папин блокнот</button>
+              <button type="button" class="chip" data-value="Закладки в Инсте">📱 Инстаграм</button>
+              <button type="button" class="chip" data-value="В чате с DeepSeek">🤖 DeepSeek</button>
+              <button type="button" class="chip" data-value="В голове у мамы">🧠 В голове</button>
+            </div>
+          </div>
+
+          <label class="form-field">
+            <span>Короткая заметка (необязательно)</span>
+            <textarea id="input-desc" rows="2" placeholder="Например: Нужно купить сливки и бекон"></textarea>
+          </label>
+
+          <label class="form-field">
+            <span>Фотография блюда (необязательно)</span>
+            <input type="file" id="input-image" accept="image/*" />
+          </label>
+
+          <button type="submit" class="btn-primary" id="btn-submit">Сохранить рецепт</button>
+        </form>
+      </div>
+    </dialog>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
