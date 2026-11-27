@@ -21,16 +21,65 @@ export async function getDishes() {
 }
 
 // 2. Загрузить фото в Storage и получить публичную ссылку
+// Вспомогательная функция сжатия фото через Canvas
+function compressImage(file, maxSize = 900, quality = 0.8) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      let { width, height } = img;
+      // Уменьшаем пропорционально, только если картинка больше maxSize
+      if (width > maxSize || height > maxSize) {
+        if (width > height) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        } else {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          // Если вдруг браузер не смог сжать (например, редкий формат), отдаем оригинал
+          resolve(blob || file);
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+
+    img.src = url;
+  });
+}
+
+// 2. Загрузить сжатое фото в Storage и получить публичную ссылку
 export async function uploadDishImage(file) {
   if (!file) return null;
 
-  // Генерируем уникальное имя файла, чтобы кириллица и пробелы не ломали ссылку
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+  const compressedBlob = await compressImage(file);
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.jpg`;
 
   const { error: uploadError } = await supabase.storage
     .from('dish-images')
-    .upload(fileName, file);
+    .upload(fileName, compressedBlob, {
+      contentType: 'image/jpeg',
+    });
 
   if (uploadError) {
     console.error('Ошибка при загрузке фото:', uploadError);
@@ -43,6 +92,7 @@ export async function uploadDishImage(file) {
 
   return data.publicUrl;
 }
+
 
 // 3. Добавить новое блюдо в таблицу
 export async function addDish({ title, source, description, imageFile }) {

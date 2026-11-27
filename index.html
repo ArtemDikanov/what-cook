@@ -15,9 +15,9 @@
     <div class="app">
       <button class="btn-gift" id="btn-gift" title="Поздравление">🎁</button>
       <header class="header">
-        <div class="header__badge">Семейная книга идей</div>
+        <div class="header__badge">Семейная книга рецептов</div>
         <h1 class="header__title">Что приготовим сегодня?</h1>
-        <p class="header__subtitle">Выбирай настроение — я подскажу блюдо и где лежит рецепт</p>
+        <p class="header__subtitle">Подскажу, какое блюдо приготовить сегодня и где лежит рецепт</p>
       </header>
 
       <main class="menu">
@@ -64,7 +64,7 @@
 
         <div class="picker-loader" id="picker-loader">
           <div class="picker-loader__emoji">🍳</div>
-          <p>Листаю семейные рецепты...</p>
+          <p>Листаю рецепты...</p>
         </div>
 
         <div class="dish-detail hidden" id="picker-result">
@@ -98,23 +98,24 @@
         <form class="add-form" id="form-add">
           <label class="form-field">
             <span>Название блюда *</span>
-            <input type="text" id="input-title" placeholder="Например: Паста Карбонара" required />
+            <input type="text" id="input-title" placeholder="Например: Творожные конвертики" required />
           </label>
 
           <div class="form-field">
             <span>Где искать рецепт? *</span>
-            <input type="text" id="input-source" placeholder="Например: Папин блокнот, стр. 14" required />
+            <input type="text" id="input-source" placeholder="Например: Синий блокнот с рецептами" required />
             <div class="chips" id="source-chips">
-              <button type="button" class="chip" data-value="Папин блокнот">📓 Папин блокнот</button>
-              <button type="button" class="chip" data-value="Закладки в Инсте">📱 Инстаграм</button>
-              <button type="button" class="chip" data-value="В чате с DeepSeek">🤖 DeepSeek</button>
-              <button type="button" class="chip" data-value="В голове у мамы">🧠 В голове</button>
+              <button type="button" class="chip" data-value="Синий блокнот с рецептами">📓 Синий блокнот</button>
+              <button type="button" class="chip" data-value="Книга "Ленивый Кулинар">📖 "Ленивый Кулинар"</button>
+              <button type="button" class="chip" data-value="Закладки в Инстаграмме">📱 Инстаграм</button>
+              <button type="button" class="chip" data-value="В чате с нейросетью">🤖 Нейросеть</button>
+              <button type="button" class="chip" data-value="В голове (пока не записан)">🧠 В голове</button>
             </div>
           </div>
 
           <label class="form-field">
             <span>Короткая заметка (необязательно)</span>
-            <textarea id="input-desc" rows="2" placeholder="Например: Нужно купить сливки и бекон"></textarea>
+            <textarea id="input-desc" rows="2" placeholder="Например: рецепт на странице №5"></textarea>
           </label>
 
           <label class="form-field">
@@ -126,16 +127,16 @@
         </form>
       </div>
     </dialog>
-    
+
     <dialog class="modal modal--gift" id="modal-gift">
       <div class="modal__box gift-box">
         <div class="gift-box__emoji">💐🎂✨</div>
         <h2 class="gift-box__title">Мамочка, с Днём Рождения!</h2>
         <p class="gift-box__text">
-          Я знаю, как часто вечерами мы все ломаем голову над вопросом «что приготовить на ужин», а любимые рецепты разбросаны по блокнотам, закладкам и нейросетям.
+          Наша вечная проблема: мы все ломаем голову над вопросом «что приготовить на ужин», а рецепты у нас разбросаны по блокнотам, книгам и телефонам.
         </p>
         <p class="gift-box__text">
-          Поэтому я сделал для тебя и нашей семьи этот небольшой помощник — чтобы он экономил твоё время и всегда подсказывал вкусные идеи. Люблю тебя! ❤️
+          Поэтому я сделал для тебя и для нас всех этот небольшой помощник — чтобы он экономил твоё время и всегда подсказывал вкусные идеи. Люблю тебя! ❤️
         </p>
         <button type="button" class="btn-primary" id="btn-gift-start">Открыть книгу рецептов</button>
       </div>
