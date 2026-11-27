@@ -1,14 +1,16 @@
+import FALLBACK_IMAGE from './placeholder.svg';
+import '@fontsource/nunito/500.css';
+import '@fontsource/nunito/700.css';
+import '@fontsource/nunito/800.css';
 import './style.scss';
+
 import { getDishes, addDish, updateDish, deleteDish } from './api.js';
 
-const FALLBACK_IMAGE =
-  "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='600' height='400' viewBox='0 0 600 400'><rect width='600' height='400' fill='%23ffedd5'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-size='96'>🍽️</text></svg>";
 
 let dishes = [];
 let recentPickedIds = [];
-let editingDishId = null; // null = создаем новое, число = редактируем существующее
+let editingDishId = null; 
 
-// Элементы DOM
 const dishesCountEl = document.getElementById('dishes-count');
 const dishesGridEl = document.getElementById('dishes-grid');
 const overlayAllEl = document.getElementById('overlay-all');
@@ -28,7 +30,6 @@ const inputSource = document.getElementById('input-source');
 const inputDesc = document.getElementById('input-desc');
 const inputImage = document.getElementById('input-image');
 
-// 1. Универсальное закрытие для всех <dialog>
 document.querySelectorAll('dialog.modal').forEach((dialog) => {
   dialog.querySelectorAll('[data-close]').forEach((btn) => {
     btn.addEventListener('click', () => dialog.close());
@@ -41,7 +42,6 @@ document.querySelectorAll('dialog.modal').forEach((dialog) => {
   });
 });
 
-// 2. Загрузка блюд при старте
 async function init() {
   try {
     dishes = await getDishes();
@@ -58,7 +58,6 @@ function updateUI() {
   renderGrid();
 }
 
-// 3. Рендер сетки "Все рецепты" с кнопками Edit / Delete
 function renderGrid() {
   if (dishes.length === 0) {
     dishesGridEl.innerHTML =
@@ -89,16 +88,13 @@ function renderGrid() {
     const dish = dishes.find((d) => d.id === id);
     if (!dish) return;
 
-    // Клик по самой карточке — просмотр
     card.addEventListener('click', () => openDetailModal(dish));
 
-    // Кнопка "Изменить"
     card.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
       e.stopPropagation();
       openEditModal(dish);
     });
 
-    // Кнопка "Удалить"
     card.querySelector('[data-action="delete"]').addEventListener('click', async (e) => {
       e.stopPropagation();
       if (!confirm(`Удалить блюдо «${dish.title}»?`)) return;
@@ -143,7 +139,6 @@ function openEditModal(dish) {
   modalAdd.showModal();
 }
 
-// 4. Рандомайзер
 function pickRandomDish() {
   if (dishes.length === 0) {
     alert('Сначала добавь хотя бы один рецепт в базу!');
@@ -173,7 +168,6 @@ function pickRandomDish() {
   }, 700);
 }
 
-// 5. Навигация главного экрана
 document.getElementById('btn-pick').addEventListener('click', pickRandomDish);
 document.getElementById('btn-pick-again').addEventListener('click', pickRandomDish);
 
@@ -197,7 +191,6 @@ document.querySelectorAll('#source-chips .chip').forEach((chip) => {
   });
 });
 
-// 6. Сохранение (создание или обновление)
 formAdd.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -238,7 +231,6 @@ formAdd.addEventListener('submit', async (e) => {
   }
 });
 
-// 7. Праздничное поздравление при первом открытии
 const modalGift = document.getElementById('modal-gift');
 const GIFT_SEEN_KEY = 'what_cook_bday_seen_v1';
 
