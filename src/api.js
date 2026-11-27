@@ -120,8 +120,24 @@ export async function addDish({ title, source, description, imageFile }) {
 }
 
 
+// Вспомогательная функция: удаляет файл из бакета по его публичной ссылке
+export async function deleteDishImage(imageUrl) {
+  if (!imageUrl || !imageUrl.includes('/dish-images/')) return;
+
+  // Вырезаем имя файла из конца ссылки (например, "1795793884381-yj3rzl.jpg")
+  const fileName = imageUrl.split('/dish-images/').pop();
+
+  const { error } = await supabase.storage
+    .from('dish-images')
+    .remove([fileName]);
+
+  if (error) {
+    console.error('Не удалось удалить старое фото из Storage:', error);
+  }
+}
+
+// 4. Обновить существующее блюдо (и удалить старое фото, если загрузили новое)
 export async function updateDish(id, { title, source, description, imageFile, existingImageUrl }) {
-  // Если выбрали новое фото — грузим его, иначе оставляем старую ссылку
   const imageUrl = imageFile ? await uploadDishImage(imageFile) : existingImageUrl;
 
   const { data, error } = await supabase
@@ -141,11 +157,16 @@ export async function updateDish(id, { title, source, description, imageFile, ex
     throw error;
   }
 
+  // Если загрузили новое фото и раньше было старое — удаляем старое из Storage
+  if (imageFile && existingImageUrl) {
+    await deleteDishImage(existingImageUrl);
+  }
+
   return data;
 }
 
-// 5. Удалить блюдо
-export async function deleteDish(id) {
+// 5. Удалить блюдо (вместе с его фото в Storage)
+export async function deleteDish(id, imageUrl) {
   const { error } = await supabase
     .from('dishes')
     .delete()
@@ -154,5 +175,9 @@ export async function deleteDish(id) {
   if (error) {
     console.error('Ошибка при удалении блюда:', error);
     throw error;
+  }
+
+  if (imageUrl) {
+    await deleteDishImage(imageUrl);
   }
 }

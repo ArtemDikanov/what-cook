@@ -104,7 +104,7 @@ function renderGrid() {
       if (!confirm(`Удалить блюдо «${dish.title}»?`)) return;
 
       try {
-        await deleteDish(id);
+        await deleteDish(id, dish.image_url);
         dishes = dishes.filter((d) => d.id !== id);
         recentPickedIds = recentPickedIds.filter((pickedId) => pickedId !== id);
         updateUI();
