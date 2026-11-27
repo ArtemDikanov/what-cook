@@ -13,6 +13,7 @@
   </head>
   <body>
     <div class="app">
+      <button class="btn-gift" id="btn-gift" title="Поздравление">🎁</button>
       <header class="header">
         <div class="header__badge">Семейная книга идей</div>
         <h1 class="header__title">Что приготовим сегодня?</h1>
@@ -123,6 +124,20 @@
 
           <button type="submit" class="btn-primary" id="btn-submit">Сохранить рецепт</button>
         </form>
+      </div>
+    </dialog>
+    
+    <dialog class="modal modal--gift" id="modal-gift">
+      <div class="modal__box gift-box">
+        <div class="gift-box__emoji">💐🎂✨</div>
+        <h2 class="gift-box__title">Мамочка, с Днём Рождения!</h2>
+        <p class="gift-box__text">
+          Я знаю, как часто вечерами мы все ломаем голову над вопросом «что приготовить на ужин», а любимые рецепты разбросаны по блокнотам, закладкам и нейросетям.
+        </p>
+        <p class="gift-box__text">
+          Поэтому я сделал для тебя и нашей семьи этот небольшой помощник — чтобы он экономил твоё время и всегда подсказывал вкусные идеи. Люблю тебя! ❤️
+        </p>
+        <button type="button" class="btn-primary" id="btn-gift-start">Открыть книгу рецептов</button>
       </div>
     </dialog>
 

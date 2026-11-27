@@ -1,0 +1,20 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Запускается каждые 3 дня в 10:00 UTC
+    - cron: '0 10 */3 * *'
+  # Позволяет запустить вручную из вкладки Actions для проверки
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -f -s -o /dev/null \
+            "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/dishes?select=id&limit=1" \
+            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY }}"
+          echo "Supabase is awake!"

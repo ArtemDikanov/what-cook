@@ -1,12 +1,12 @@
 import './style.scss';
-import { getDishes, addDish } from './api.js';
+import { getDishes, addDish, updateDish, deleteDish } from './api.js';
 
-// Встроенная аккуратная заглушка на случай, если блюдо добавили без фото
 const FALLBACK_IMAGE =
   "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='600' height='400' viewBox='0 0 600 400'><rect width='600' height='400' fill='%23ffedd5'/><text x='50%' y='52%' dominant-baseline='middle' text-anchor='middle' font-size='96'>🍽️</text></svg>";
 
 let dishes = [];
 let recentPickedIds = [];
+let editingDishId = null; // null = создаем новое, число = редактируем существующее
 
 // Элементы DOM
 const dishesCountEl = document.getElementById('dishes-count');
@@ -20,7 +20,15 @@ const modalAdd = document.getElementById('modal-add');
 const pickerLoader = document.getElementById('picker-loader');
 const pickerResult = document.getElementById('picker-result');
 
-// 1. Универсальное закрытие для всех <dialog> (крестик + клик мимо окна)
+const formAdd = document.getElementById('form-add');
+const btnSubmit = document.getElementById('btn-submit');
+const modalAddTitle = modalAdd.querySelector('.modal__title');
+const inputTitle = document.getElementById('input-title');
+const inputSource = document.getElementById('input-source');
+const inputDesc = document.getElementById('input-desc');
+const inputImage = document.getElementById('input-image');
+
+// 1. Универсальное закрытие для всех <dialog>
 document.querySelectorAll('dialog.modal').forEach((dialog) => {
   dialog.querySelectorAll('[data-close]').forEach((btn) => {
     btn.addEventListener('click', () => dialog.close());
@@ -33,7 +41,7 @@ document.querySelectorAll('dialog.modal').forEach((dialog) => {
   });
 });
 
-// 2. Загрузка блюд из Supabase при старте
+// 2. Загрузка блюд при старте
 async function init() {
   try {
     dishes = await getDishes();
@@ -50,7 +58,7 @@ function updateUI() {
   renderGrid();
 }
 
-// 3. Рендер сетки "Все рецепты"
+// 3. Рендер сетки "Все рецепты" с кнопками Edit / Delete
 function renderGrid() {
   if (dishes.length === 0) {
     dishesGridEl.innerHTML =
@@ -62,6 +70,10 @@ function renderGrid() {
     .map(
       (dish) => `
       <article class="dish-card" data-id="${dish.id}">
+        <div class="dish-card__actions">
+          <button type="button" class="dish-card__action-btn" data-action="edit" title="Изменить">✏️</button>
+          <button type="button" class="dish-card__action-btn dish-card__action-btn--delete" data-action="delete" title="Удалить">🗑️</button>
+        </div>
         <img class="dish-card__img" src="${dish.image_url || FALLBACK_IMAGE}" alt="${dish.title}" loading="lazy" />
         <div class="dish-card__body">
           <h3 class="dish-card__title">${dish.title}</h3>
@@ -72,12 +84,33 @@ function renderGrid() {
     )
     .join('');
 
-  // Клик по карточке открывает детали
   dishesGridEl.querySelectorAll('.dish-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      const id = Number(card.dataset.id);
-      const dish = dishes.find((d) => d.id === id);
-      if (dish) openDetailModal(dish);
+    const id = Number(card.dataset.id);
+    const dish = dishes.find((d) => d.id === id);
+    if (!dish) return;
+
+    // Клик по самой карточке — просмотр
+    card.addEventListener('click', () => openDetailModal(dish));
+
+    // Кнопка "Изменить"
+    card.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditModal(dish);
+    });
+
+    // Кнопка "Удалить"
+    card.querySelector('[data-action="delete"]').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(`Удалить блюдо «${dish.title}»?`)) return;
+
+      try {
+        await deleteDish(id);
+        dishes = dishes.filter((d) => d.id !== id);
+        recentPickedIds = recentPickedIds.filter((pickedId) => pickedId !== id);
+        updateUI();
+      } catch (err) {
+        alert('Не удалось удалить блюдо. Попробуй еще раз.');
+      }
     });
   });
 }
@@ -90,7 +123,27 @@ function openDetailModal(dish) {
   modalDetail.showModal();
 }
 
-// 4. Логика кнопки "Подобрать рецепт" (с защитой от повторов)
+function openCreateModal() {
+  editingDishId = null;
+  formAdd.reset();
+  modalAddTitle.textContent = 'Новый рецепт';
+  btnSubmit.textContent = 'Сохранить рецепт';
+  modalAdd.showModal();
+}
+
+function openEditModal(dish) {
+  editingDishId = dish.id;
+  formAdd.reset();
+  modalAddTitle.textContent = 'Изменить рецепт';
+  btnSubmit.textContent = 'Сохранить изменения';
+
+  inputTitle.value = dish.title;
+  inputSource.value = dish.source;
+  inputDesc.value = dish.description || '';
+  modalAdd.showModal();
+}
+
+// 4. Рандомайзер
 function pickRandomDish() {
   if (dishes.length === 0) {
     alert('Сначала добавь хотя бы один рецепт в базу!');
@@ -101,7 +154,6 @@ function pickRandomDish() {
   pickerLoader.classList.remove('hidden');
   pickerResult.classList.add('hidden');
 
-  // Фильтруем недавно выпавшие блюда (если всего блюд больше, чем история)
   const historyLimit = Math.min(3, dishes.length - 1);
   const blockedIds = recentPickedIds.slice(-historyLimit);
   const candidates = dishes.filter((d) => !blockedIds.includes(d.id));
@@ -110,7 +162,6 @@ function pickRandomDish() {
   const chosen = pool[Math.floor(Math.random() * pool.length)];
   recentPickedIds.push(chosen.id);
 
-  // Небольшая пауза для красивой анимации сковородки
   setTimeout(() => {
     document.getElementById('pick-img').src = chosen.image_url || FALLBACK_IMAGE;
     document.getElementById('pick-source').textContent = `📍 Где искать: ${chosen.source}`;
@@ -136,12 +187,9 @@ document.getElementById('btn-close-all').addEventListener('click', () => {
   overlayAllEl.inert = true;
 });
 
-document.getElementById('btn-add').addEventListener('click', () => {
-  modalAdd.showModal();
-});
+document.getElementById('btn-add').addEventListener('click', openCreateModal);
 
-// Быстрые чипсы для поля "Где искать"
-const inputSource = document.getElementById('input-source');
+// Быстрые чипсы
 document.querySelectorAll('#source-chips .chip').forEach((chip) => {
   chip.addEventListener('click', () => {
     inputSource.value = chip.dataset.value;
@@ -149,17 +197,14 @@ document.querySelectorAll('#source-chips .chip').forEach((chip) => {
   });
 });
 
-// 6. Отправка формы добавления рецепта
-const formAdd = document.getElementById('form-add');
-const btnSubmit = document.getElementById('btn-submit');
-
+// 6. Сохранение (создание или обновление)
 formAdd.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const title = document.getElementById('input-title').value.trim();
+  const title = inputTitle.value.trim();
   const source = inputSource.value.trim();
-  const description = document.getElementById('input-desc').value.trim();
-  const imageFile = document.getElementById('input-image').files[0] || null;
+  const description = inputDesc.value.trim();
+  const imageFile = inputImage.files[0] || null;
 
   if (!title || !source) return;
 
@@ -167,8 +212,21 @@ formAdd.addEventListener('submit', async (e) => {
   btnSubmit.textContent = 'Сохраняю...';
 
   try {
-    const created = await addDish({ title, source, description, imageFile });
-    dishes.unshift(created); // Добавляем в начало локального списка
+    if (editingDishId !== null) {
+      const existingDish = dishes.find((d) => d.id === editingDishId);
+      const updated = await updateDish(editingDishId, {
+        title,
+        source,
+        description,
+        imageFile,
+        existingImageUrl: existingDish?.image_url || null,
+      });
+      dishes = dishes.map((d) => (d.id === editingDishId ? updated : d));
+    } else {
+      const created = await addDish({ title, source, description, imageFile });
+      dishes.unshift(created);
+    }
+
     updateUI();
     formAdd.reset();
     modalAdd.close();
@@ -176,10 +234,26 @@ formAdd.addEventListener('submit', async (e) => {
     alert('Не удалось сохранить рецепт. Проверь интернет и попробуй снова.');
   } finally {
     btnSubmit.disabled = false;
-    btnSubmit.textContent = 'Сохранить рецепт';
+    btnSubmit.textContent = editingDishId !== null ? 'Сохранить изменения' : 'Сохранить рецепт';
   }
 });
 
-init();
+// 7. Праздничное поздравление при первом открытии
+const modalGift = document.getElementById('modal-gift');
+const GIFT_SEEN_KEY = 'what_cook_bday_seen_v1';
 
-getDishes().then(console.log);
+document.getElementById('btn-gift').addEventListener('click', () => {
+  modalGift.showModal();
+});
+
+document.getElementById('btn-gift-start').addEventListener('click', () => {
+  localStorage.setItem(GIFT_SEEN_KEY, 'true');
+  modalGift.close();
+});
+
+if (!localStorage.getItem(GIFT_SEEN_KEY)) {
+  modalGift.showModal();
+}
+
+
+init();

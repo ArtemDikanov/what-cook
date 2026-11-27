@@ -152,7 +152,7 @@ body {
   &.is-open {
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0);
+    transform: none;
   }
 
   &__container {
@@ -253,8 +253,7 @@ dialog.modal {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
   &::backdrop {
-    background: rgba(43, 33, 27, 0.55);
-    backdrop-filter: blur(4px);
+    background: rgba(43, 33, 27, 0.65);
   }
 
   &[open] {
@@ -459,5 +458,94 @@ dialog.modal {
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+}
+
+/* КНОПКИ РЕДАКТИРОВАНИЯ И УДАЛЕНИЯ НА КАРТОЧКЕ */
+.dish-card {
+  position: relative;
+
+  &__actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+  }
+
+  &__action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, background 0.15s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      background: #ffffff;
+    }
+
+    &--delete:hover {
+      background: #fee2e2;
+    }
+  }
+}
+
+/* ПРАЗДНИЧНАЯ ОТКРЫТКА */
+.app {
+  position: relative;
+}
+
+.btn-gift {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.08) rotate(8deg);
+  }
+}
+
+.gift-box {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 22px;
+
+  &__emoji {
+    font-size: 2.8rem;
+    line-height: 1;
+  }
+
+  &__title {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--primary);
+  }
+
+  &__text {
+    font-size: 0.96rem;
+    line-height: 1.5;
+    color: var(--text);
   }
 }

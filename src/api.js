@@ -68,3 +68,41 @@ export async function addDish({ title, source, description, imageFile }) {
 
   return data;
 }
+
+
+export async function updateDish(id, { title, source, description, imageFile, existingImageUrl }) {
+  // Если выбрали новое фото — грузим его, иначе оставляем старую ссылку
+  const imageUrl = imageFile ? await uploadDishImage(imageFile) : existingImageUrl;
+
+  const { data, error } = await supabase
+    .from('dishes')
+    .update({
+      title,
+      source,
+      description: description || null,
+      image_url: imageUrl,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Ошибка при обновлении блюда:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+// 5. Удалить блюдо
+export async function deleteDish(id) {
+  const { error } = await supabase
+    .from('dishes')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Ошибка при удалении блюда:', error);
+    throw error;
+  }
+}
