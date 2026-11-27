@@ -1,4 +1,4 @@
-import FALLBACK_IMAGE from './placeholder.svg';
+import FALLBACK_IMAGE from "./placeholder.svg";
 import '@fontsource/nunito/500.css';
 import '@fontsource/nunito/700.css';
 import '@fontsource/nunito/800.css';
@@ -246,6 +246,21 @@ document.getElementById('btn-gift-start').addEventListener('click', () => {
 if (!localStorage.getItem(GIFT_SEEN_KEY)) {
   modalGift.showModal();
 }
+
+// Генерация PNG-иконки 180x180 для ярлыка на рабочий стол iOS/Android
+(function generateAppIcon() {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 180;
+    canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, 180, 180);
+    const appleIcon = document.getElementById('apple-icon');
+    if (appleIcon) appleIcon.href = canvas.toDataURL('image/png');
+  };
+  img.src = './favicon.svg?v=2';
+})();
 
 
 init();
